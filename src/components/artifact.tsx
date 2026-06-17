@@ -1,5 +1,4 @@
 "use client";
-
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -291,7 +290,7 @@ function getTargetDayLabel(puzzleDate: PuzzleDate) {
   return String(puzzleDate.day);
 }
 
-function normaliseMatrix(matrix: Matrix): Matrix {
+function normalizeMatrix(matrix: Matrix): Matrix {
   const occupiedRows = matrix
     .map((row, rowIndex) => (row.some(Boolean) ? rowIndex : null))
     .filter((rowIndex): rowIndex is number => rowIndex !== null);
@@ -331,11 +330,11 @@ function rotateMatrixClockwise(matrix: Matrix): Matrix {
     ),
   );
 
-  return normaliseMatrix(rotatedMatrix);
+  return normalizeMatrix(rotatedMatrix);
 }
 
 function flipMatrixHorizontally(matrix: Matrix): Matrix {
-  return normaliseMatrix(matrix.map((row) => [...row].reverse()));
+  return normalizeMatrix(matrix.map((row) => [...row].reverse()));
 }
 
 function forEachOccupiedMatrixCell(
@@ -495,7 +494,9 @@ function getSnappedBoardLocation(
 }
 
 function getPieceOccupiedBoardCells(piece: PieceState): OccupiedBoardCell[] {
-  if (piece.location.type !== "board") {
+  const { location } = piece;
+
+  if (location.type !== "board") {
     return [];
   }
 
@@ -506,8 +507,8 @@ function getPieceOccupiedBoardCells(piece: PieceState): OccupiedBoardCell[] {
     (matrixRowIndex, matrixColumnIndex) => {
       occupiedBoardCells.push({
         pieceId: piece.pieceId,
-        rowIndex: piece.location.rowIndex + matrixRowIndex,
-        columnIndex: piece.location.columnIndex + matrixColumnIndex,
+        rowIndex: location.rowIndex + matrixRowIndex,
+        columnIndex: location.columnIndex + matrixColumnIndex,
       });
     },
   );
@@ -605,7 +606,7 @@ function derivePuzzleState(
   };
 }
 
-export default function Artifact() {
+const Artifact = () => {
   const scalerElementRef = useRef<HTMLDivElement | null>(null);
   const stageElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -689,6 +690,10 @@ export default function Artifact() {
         return;
       }
 
+      if (!dragState) {
+        return;
+      }
+
       const nextLeft = pointerPoint.x - dragState.offsetX;
       const nextTop = pointerPoint.y - dragState.offsetY;
 
@@ -724,6 +729,10 @@ export default function Artifact() {
       if (!pointerPoint) {
         setDragState(null);
 
+        return;
+      }
+
+      if (!dragState) {
         return;
       }
 
@@ -1123,7 +1132,9 @@ export default function Artifact() {
       </div>
     </main>
   );
-}
+};
+
+export default Artifact;
 
 const PuzzlePiece = ({
   piece,
@@ -1182,13 +1193,13 @@ const PuzzlePiece = ({
       onPointerDown={onPointerDown}
     >
       {occupiedCells.map(({ rowIndex, columnIndex }) => {
-        const hasRightNeighbour = Boolean(
+        const hasRightNeighbor = Boolean(
           piece.matrix[rowIndex]?.[columnIndex + 1],
         );
-        const hasBottomNeighbour = Boolean(
+        const hasBottomNeighbor = Boolean(
           piece.matrix[rowIndex + 1]?.[columnIndex],
         );
-        const hasBottomRightNeighbour = Boolean(
+        const hasBottomRightNeighbor = Boolean(
           piece.matrix[rowIndex + 1]?.[columnIndex + 1],
         );
 
@@ -1209,7 +1220,7 @@ const PuzzlePiece = ({
               }}
             />
 
-            {hasRightNeighbour ? (
+            {hasRightNeighbor ? (
               <div
                 className="absolute"
                 style={{
@@ -1222,7 +1233,7 @@ const PuzzlePiece = ({
               />
             ) : null}
 
-            {hasBottomNeighbour ? (
+            {hasBottomNeighbor ? (
               <div
                 className="absolute"
                 style={{
@@ -1235,9 +1246,7 @@ const PuzzlePiece = ({
               />
             ) : null}
 
-            {hasRightNeighbour &&
-            hasBottomNeighbour &&
-            hasBottomRightNeighbour ? (
+            {hasRightNeighbor && hasBottomNeighbor && hasBottomRightNeighbor ? (
               <div
                 className="absolute"
                 style={{
