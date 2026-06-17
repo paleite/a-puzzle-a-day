@@ -3,6 +3,14 @@ import { type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const cellSize = 42;
@@ -619,6 +627,8 @@ const Artifact = () => {
   );
   const [selectedPieceId, setSelectedPieceId] = useState<PieceId | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [isSolvedModalOpen, setIsSolvedModalOpen] = useState(false);
+  const wasSolvedRef = useRef(false);
 
   const derivedPuzzleState = useMemo(
     () => derivePuzzleState(pieces, puzzleDate),
@@ -636,6 +646,14 @@ const Artifact = () => {
       console.debug("Invalid placement debug", invalidIssueSummary);
     }
   }, [derivedPuzzleState.debugIssues]);
+
+  useEffect(() => {
+    if (derivedPuzzleState.isSolved && !wasSolvedRef.current) {
+      setIsSolvedModalOpen(true);
+    }
+
+    wasSolvedRef.current = derivedPuzzleState.isSolved;
+  }, [derivedPuzzleState.isSolved]);
 
   useEffect(() => {
     function updateScale() {
@@ -909,6 +927,7 @@ const Artifact = () => {
   function resetPieces() {
     setSelectedPieceId(null);
     setDragState(null);
+    setIsSolvedModalOpen(false);
     setPieces(createInitialPieces());
   }
 
@@ -921,6 +940,33 @@ const Artifact = () => {
 
   return (
     <main className="min-h-svh overflow-hidden bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_26%),linear-gradient(135deg,#9a7750,#745236)] p-3 text-stone-950">
+      <Dialog open={isSolvedModalOpen} onOpenChange={setIsSolvedModalOpen}>
+        <DialogContent className="max-w-md rounded-[1.75rem] border border-amber-950/10 bg-amber-50 p-0 text-amber-950 shadow-2xl">
+          <DialogHeader className="gap-3 px-6 pt-6">
+            <p className="text-xs font-semibold tracking-[0.22em] text-emerald-800/70 uppercase">
+              Puzzle solved
+            </p>
+            <DialogTitle className="text-3xl font-black">
+              Congratulations
+            </DialogTitle>
+            <DialogDescription className="text-base text-amber-950/75">
+              You solved {getPuzzleDateLabel(puzzleDate)}. Pick another day or
+              reset pieces for another run.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="mt-6 rounded-b-[1.75rem] border-amber-950/10 bg-amber-100/70 px-6 py-4">
+            <Button
+              className="rounded-full bg-amber-950 text-amber-50 hover:bg-amber-900"
+              type="button"
+              onClick={() => setIsSolvedModalOpen(false)}
+            >
+              Keep playing
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="mx-auto max-w-5xl">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-amber-950/10 bg-amber-100/85 px-4 py-3 shadow-xl backdrop-blur">
           <div>
