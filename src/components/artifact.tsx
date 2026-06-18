@@ -1,5 +1,6 @@
 "use client";
-import { type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { PointerEvent, PointerEventHandler } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,35 +35,17 @@ type PieceId = (typeof pieceIds)[number];
 
 type Matrix = number[][];
 
-type Point = {
-  x: number;
-  y: number;
-};
+type Point = { x: number; y: number };
 
-type CellCoordinate = {
-  rowIndex: number;
-  columnIndex: number;
-};
+type CellCoordinate = { rowIndex: number; columnIndex: number };
 
-type TabletopLocation = {
-  type: "tabletop";
-  x: number;
-  y: number;
-};
+type TabletopLocation = { type: "tabletop"; x: number; y: number };
 
-type BoardLocation = {
-  type: "board";
-  rowIndex: number;
-  columnIndex: number;
-};
+type BoardLocation = { type: "board"; rowIndex: number; columnIndex: number };
 
 type PieceLocation = TabletopLocation | BoardLocation;
 
-type PieceDefinition = {
-  color: string;
-  home: Point;
-  matrix: Matrix;
-};
+type PieceDefinition = { color: string; home: Point; matrix: Matrix };
 
 type PieceState = {
   pieceId: PieceId;
@@ -72,21 +55,11 @@ type PieceState = {
   zIndex: number;
 };
 
-type DragState = {
-  pieceId: PieceId;
-  offsetX: number;
-  offsetY: number;
-};
+type DragState = { pieceId: PieceId; offsetX: number; offsetY: number };
 
-type BoardCell = {
-  label: string | null;
-  type: "month" | "day" | "absent";
-};
+type BoardCell = { label: string | null; type: "month" | "day" | "absent" };
 
-type PuzzleDate = {
-  monthIndex: number;
-  day: number;
-};
+type PuzzleDate = { monthIndex: number; day: number };
 
 type OccupiedBoardCell = {
   pieceId: PieceId;
@@ -95,19 +68,9 @@ type OccupiedBoardCell = {
 };
 
 type ValidationIssue =
-  | {
-      type: "outside-board";
-      cell: CellCoordinate;
-    }
-  | {
-      type: "covers-target-date";
-      cell: CellCoordinate;
-    }
-  | {
-      type: "overlap";
-      cell: CellCoordinate;
-      coveringPieceIds: PieceId[];
-    };
+  | { type: "outside-board"; cell: CellCoordinate }
+  | { type: "covers-target-date"; cell: CellCoordinate }
+  | { type: "overlap"; cell: CellCoordinate; coveringPieceIds: PieceId[] };
 
 const monthLabels = [
   "Jan",
@@ -267,10 +230,7 @@ const pieceDefinitions = {
 function getTodayPuzzleDate(): PuzzleDate {
   const today = new Date();
 
-  return {
-    monthIndex: today.getMonth(),
-    day: today.getDate(),
-  };
+  return { monthIndex: today.getMonth(), day: today.getDate() };
 }
 
 function shiftPuzzleDate(
@@ -280,10 +240,7 @@ function shiftPuzzleDate(
   const shiftedDate = new Date(2026, puzzleDate.monthIndex, puzzleDate.day);
   shiftedDate.setDate(shiftedDate.getDate() + dayOffset);
 
-  return {
-    monthIndex: shiftedDate.getMonth(),
-    day: shiftedDate.getDate(),
-  };
+  return { monthIndex: shiftedDate.getMonth(), day: shiftedDate.getDate() };
 }
 
 function getPuzzleDateLabel(puzzleDate: PuzzleDate) {
@@ -459,10 +416,7 @@ function getPieceTopLeft(piece: PieceState): Point {
     );
   }
 
-  return {
-    x: piece.location.x,
-    y: piece.location.y,
-  };
+  return { x: piece.location.x, y: piece.location.y };
 }
 
 function getSnappedBoardLocation(
@@ -578,25 +532,15 @@ function derivePuzzleState(
         const coveringPieceIds = boardCellCoverage.get(cellKey) ?? [];
 
         if (!isValidBoardCell(cell.rowIndex, cell.columnIndex)) {
-          issues.push({
-            type: "outside-board",
-            cell,
-          });
+          issues.push({ type: "outside-board", cell });
         }
 
         if (isTargetDateCell(cell.rowIndex, cell.columnIndex, puzzleDate)) {
-          issues.push({
-            type: "covers-target-date",
-            cell,
-          });
+          issues.push({ type: "covers-target-date", cell });
         }
 
         if (coveringPieceIds.length > 1) {
-          issues.push({
-            type: "overlap",
-            cell,
-            coveringPieceIds,
-          });
+          issues.push({ type: "overlap", cell, coveringPieceIds });
         }
       });
 
@@ -616,19 +560,21 @@ function derivePuzzleState(
   };
 }
 
+type PuzzlePieceProps = {
+  piece: PieceState;
+  isDragging: boolean;
+  isInvalid: boolean;
+  isSelected: boolean;
+  onPointerDown: PointerEventHandler<HTMLDivElement>;
+};
+
 function PuzzlePiece({
   piece,
   isDragging,
   isInvalid,
   isSelected,
   onPointerDown,
-}: {
-  piece: PieceState;
-  isDragging: boolean;
-  isInvalid: boolean;
-  isSelected: boolean;
-  onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
-}) {
+}: Readonly<PuzzlePieceProps>) {
   const topLeft = getPieceTopLeft(piece);
   const dimensions = getPieceDimensions(piece.matrix);
 
@@ -744,10 +690,7 @@ function PuzzlePiece({
 
       <div
         className="pointer-events-none absolute flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/55 text-sm font-black text-slate-900/75 [text-shadow:0_1px_1px_rgba(255,255,255,0.5)]"
-        style={{
-          left: labelPosition.x,
-          top: labelPosition.y,
-        }}
+        style={{ left: labelPosition.x, top: labelPosition.y }}
       >
         {piece.pieceId}
       </div>
@@ -927,9 +870,7 @@ function Artifact() {
     document.addEventListener("pointermove", handlePointerMove, {
       passive: false,
     });
-    document.addEventListener("pointerup", handlePointerUp, {
-      passive: false,
-    });
+    document.addEventListener("pointerup", handlePointerUp, { passive: false });
     document.addEventListener("pointercancel", handlePointerUp, {
       passive: false,
     });
@@ -949,10 +890,7 @@ function Artifact() {
 
       return {
         ...currentPieces,
-        [pieceId]: {
-          ...currentPieces[pieceId],
-          zIndex: nextZIndex,
-        },
+        [pieceId]: { ...currentPieces[pieceId], zIndex: nextZIndex },
       };
     });
   }
@@ -1007,11 +945,7 @@ function Artifact() {
         [selectedPieceId]: {
           ...currentPieces[selectedPieceId],
           zIndex: nextZIndex,
-          location: {
-            type: "board",
-            rowIndex,
-            columnIndex,
-          },
+          location: { type: "board", rowIndex, columnIndex },
         },
       };
     });
@@ -1056,11 +990,7 @@ function Artifact() {
       ...currentPieces,
       [selectedPieceId]: {
         ...currentPieces[selectedPieceId],
-        location: {
-          type: "tabletop",
-          x: homePosition.x,
-          y: homePosition.y,
-        },
+        location: { type: "tabletop", x: homePosition.x, y: homePosition.y },
       },
     }));
   }

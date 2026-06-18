@@ -2,7 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-const Artifact = dynamic(() => import("@/components/artifact"), { ssr: false });
+const Artifact = dynamic(() => import("@/components/artifact"), {
+  ssr: false,
+});
 
 export default function Home() {
   return (
