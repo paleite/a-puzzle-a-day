@@ -5,15 +5,17 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Popover = ({ ...props }: PopoverPrimitive.Root.Props) => {
+function Popover({ ...props }: Readonly<PopoverPrimitive.Root.Props>) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
-};
+}
 
-const PopoverTrigger = ({ ...props }: PopoverPrimitive.Trigger.Props) => {
+function PopoverTrigger({
+  ...props
+}: Readonly<PopoverPrimitive.Trigger.Props>) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
-};
+}
 
-const PopoverContent = ({
+function PopoverContent({
   className,
   align = "center",
   alignOffset = 0,
@@ -24,7 +26,7 @@ const PopoverContent = ({
   Pick<
     PopoverPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
-  >) => {
+  >) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
@@ -45,12 +47,9 @@ const PopoverContent = ({
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>
   );
-};
+}
 
-const PopoverHeader = ({
-  className,
-  ...props
-}: React.ComponentProps<"div">) => {
+function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("flex flex-col gap-0.5 text-sm", className)}
@@ -58,12 +57,12 @@ const PopoverHeader = ({
       {...props}
     />
   );
-};
+}
 
-const PopoverTitle = ({
+function PopoverTitle({
   className,
   ...props
-}: PopoverPrimitive.Title.Props) => {
+}: Readonly<PopoverPrimitive.Title.Props>) {
   return (
     <PopoverPrimitive.Title
       className={cn("font-medium", className)}
@@ -71,12 +70,12 @@ const PopoverTitle = ({
       {...props}
     />
   );
-};
+}
 
-const PopoverDescription = ({
+function PopoverDescription({
   className,
   ...props
-}: PopoverPrimitive.Description.Props) => {
+}: Readonly<PopoverPrimitive.Description.Props>) {
   return (
     <PopoverPrimitive.Description
       className={cn("text-muted-foreground", className)}
@@ -84,7 +83,7 @@ const PopoverDescription = ({
       {...props}
     />
   );
-};
+}
 
 export {
   Popover,

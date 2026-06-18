@@ -4,11 +4,11 @@ import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 
 import { cn } from "@/lib/utils";
 
-const Separator = ({
+function Separator({
   className,
   orientation = "horizontal",
   ...props
-}: SeparatorPrimitive.Props) => {
+}: Readonly<SeparatorPrimitive.Props>) {
   return (
     <SeparatorPrimitive
       className={cn(
@@ -20,6 +20,6 @@ const Separator = ({
       {...props}
     />
   );
-};
+}
 
 export { Separator };

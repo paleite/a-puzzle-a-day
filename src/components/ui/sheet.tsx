@@ -7,26 +7,26 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const Sheet = ({ ...props }: SheetPrimitive.Root.Props) => {
+function Sheet({ ...props }: Readonly<SheetPrimitive.Root.Props>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
-};
+}
 
-const SheetTrigger = ({ ...props }: SheetPrimitive.Trigger.Props) => {
+function SheetTrigger({ ...props }: Readonly<SheetPrimitive.Trigger.Props>) {
   return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
-};
+}
 
-const SheetClose = ({ ...props }: SheetPrimitive.Close.Props) => {
+function SheetClose({ ...props }: Readonly<SheetPrimitive.Close.Props>) {
   return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
-};
+}
 
-const SheetPortal = ({ ...props }: SheetPrimitive.Portal.Props) => {
+function SheetPortal({ ...props }: Readonly<SheetPrimitive.Portal.Props>) {
   return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
-};
+}
 
-const SheetOverlay = ({
+function SheetOverlay({
   className,
   ...props
-}: SheetPrimitive.Backdrop.Props) => {
+}: Readonly<SheetPrimitive.Backdrop.Props>) {
   return (
     <SheetPrimitive.Backdrop
       className={cn(
@@ -37,9 +37,9 @@ const SheetOverlay = ({
       {...props}
     />
   );
-};
+}
 
-const SheetContent = ({
+function SheetContent({
   className,
   children,
   side = "right",
@@ -48,7 +48,7 @@ const SheetContent = ({
 }: SheetPrimitive.Popup.Props & {
   side?: "top" | "right" | "bottom" | "left";
   showCloseButton?: boolean;
-}) => {
+}) {
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -80,9 +80,9 @@ const SheetContent = ({
       </SheetPrimitive.Popup>
     </SheetPortal>
   );
-};
+}
 
-const SheetHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
+function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("flex flex-col gap-0.5 p-4", className)}
@@ -90,9 +90,9 @@ const SheetHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const SheetFooter = ({ className, ...props }: React.ComponentProps<"div">) => {
+function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("mt-auto flex flex-col gap-2 p-4", className)}
@@ -100,9 +100,12 @@ const SheetFooter = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const SheetTitle = ({ className, ...props }: SheetPrimitive.Title.Props) => {
+function SheetTitle({
+  className,
+  ...props
+}: Readonly<SheetPrimitive.Title.Props>) {
   return (
     <SheetPrimitive.Title
       className={cn(
@@ -113,12 +116,12 @@ const SheetTitle = ({ className, ...props }: SheetPrimitive.Title.Props) => {
       {...props}
     />
   );
-};
+}
 
-const SheetDescription = ({
+function SheetDescription({
   className,
   ...props
-}: SheetPrimitive.Description.Props) => {
+}: Readonly<SheetPrimitive.Description.Props>) {
   return (
     <SheetPrimitive.Description
       className={cn("text-sm text-muted-foreground", className)}
@@ -126,7 +129,7 @@ const SheetDescription = ({
       {...props}
     />
   );
-};
+}
 
 export {
   Sheet,

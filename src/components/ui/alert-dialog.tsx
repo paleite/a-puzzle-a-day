@@ -6,28 +6,30 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const AlertDialog = ({ ...props }: AlertDialogPrimitive.Root.Props) => {
+function AlertDialog({ ...props }: Readonly<AlertDialogPrimitive.Root.Props>) {
   return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
-};
+}
 
-const AlertDialogTrigger = ({
+function AlertDialogTrigger({
   ...props
-}: AlertDialogPrimitive.Trigger.Props) => {
+}: Readonly<AlertDialogPrimitive.Trigger.Props>) {
   return (
     <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
   );
-};
+}
 
-const AlertDialogPortal = ({ ...props }: AlertDialogPrimitive.Portal.Props) => {
+function AlertDialogPortal({
+  ...props
+}: Readonly<AlertDialogPrimitive.Portal.Props>) {
   return (
     <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
   );
-};
+}
 
-const AlertDialogOverlay = ({
+function AlertDialogOverlay({
   className,
   ...props
-}: AlertDialogPrimitive.Backdrop.Props) => {
+}: Readonly<AlertDialogPrimitive.Backdrop.Props>) {
   return (
     <AlertDialogPrimitive.Backdrop
       className={cn(
@@ -38,15 +40,15 @@ const AlertDialogOverlay = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogContent = ({
+function AlertDialogContent({
   className,
   size = "default",
   ...props
 }: AlertDialogPrimitive.Popup.Props & {
   size?: "default" | "sm";
-}) => {
+}) {
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -61,12 +63,12 @@ const AlertDialogContent = ({
       />
     </AlertDialogPortal>
   );
-};
+}
 
-const AlertDialogHeader = ({
+function AlertDialogHeader({
   className,
   ...props
-}: React.ComponentProps<"div">) => {
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -77,12 +79,12 @@ const AlertDialogHeader = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogFooter = ({
+function AlertDialogFooter({
   className,
   ...props
-}: React.ComponentProps<"div">) => {
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -93,12 +95,12 @@ const AlertDialogFooter = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogMedia = ({
+function AlertDialogMedia({
   className,
   ...props
-}: React.ComponentProps<"div">) => {
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -109,12 +111,12 @@ const AlertDialogMedia = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogTitle = ({
+function AlertDialogTitle({
   className,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Title>) => {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Title>) {
   return (
     <AlertDialogPrimitive.Title
       className={cn(
@@ -125,12 +127,12 @@ const AlertDialogTitle = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogDescription = ({
+function AlertDialogDescription({
   className,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Description>) => {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Description>) {
   return (
     <AlertDialogPrimitive.Description
       className={cn(
@@ -141,12 +143,12 @@ const AlertDialogDescription = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogAction = ({
+function AlertDialogAction({
   className,
   ...props
-}: React.ComponentProps<typeof Button>) => {
+}: React.ComponentProps<typeof Button>) {
   return (
     <Button
       className={cn(className)}
@@ -154,15 +156,15 @@ const AlertDialogAction = ({
       {...props}
     />
   );
-};
+}
 
-const AlertDialogCancel = ({
+function AlertDialogCancel({
   className,
   variant = "outline",
   size = "default",
   ...props
 }: AlertDialogPrimitive.Close.Props &
-  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) => {
+  Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
   return (
     <AlertDialogPrimitive.Close
       className={cn(className)}
@@ -171,7 +173,7 @@ const AlertDialogCancel = ({
       {...props}
     />
   );
-};
+}
 
 export {
   AlertDialog,

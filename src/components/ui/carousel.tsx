@@ -42,7 +42,7 @@ function useCarousel() {
   return context;
 }
 
-const Carousel = ({
+function Carousel({
   orientation = "horizontal",
   opts,
   setApi,
@@ -50,7 +50,7 @@ const Carousel = ({
   className,
   children,
   ...props
-}: React.ComponentProps<"div"> & CarouselProps) => {
+}: React.ComponentProps<"div"> & CarouselProps) {
   const [carouselRef, api] = useEmblaCarousel(
     {
       ...opts,
@@ -106,7 +106,7 @@ const Carousel = ({
     api.on("select", onSelect);
 
     return () => {
-      api?.off("select", onSelect);
+      api.off("select", onSelect);
     };
   }, [api, onSelect]);
 
@@ -116,8 +116,7 @@ const Carousel = ({
         carouselRef,
         api,
         opts,
-        orientation:
-          orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+        orientation,
         scrollPrev,
         scrollNext,
         canScrollPrev,
@@ -136,12 +135,9 @@ const Carousel = ({
       </div>
     </CarouselContext.Provider>
   );
-};
+}
 
-const CarouselContent = ({
-  className,
-  ...props
-}: React.ComponentProps<"div">) => {
+function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel();
 
   return (
@@ -160,9 +156,9 @@ const CarouselContent = ({
       />
     </div>
   );
-};
+}
 
-const CarouselItem = ({ className, ...props }: React.ComponentProps<"div">) => {
+function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   const { orientation } = useCarousel();
 
   return (
@@ -178,14 +174,14 @@ const CarouselItem = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const CarouselPrevious = ({
+function CarouselPrevious({
   className,
   variant = "outline",
   size = "icon-sm",
   ...props
-}: React.ComponentProps<typeof Button>) => {
+}: React.ComponentProps<typeof Button>) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
   return (
@@ -208,14 +204,14 @@ const CarouselPrevious = ({
       <span className="sr-only">Previous slide</span>
     </Button>
   );
-};
+}
 
-const CarouselNext = ({
+function CarouselNext({
   className,
   variant = "outline",
   size = "icon-sm",
   ...props
-}: React.ComponentProps<typeof Button>) => {
+}: React.ComponentProps<typeof Button>) {
   const { orientation, scrollNext, canScrollNext } = useCarousel();
 
   return (
@@ -238,7 +234,7 @@ const CarouselNext = ({
       <span className="sr-only">Next slide</span>
     </Button>
   );
-};
+}
 
 export {
   Carousel,

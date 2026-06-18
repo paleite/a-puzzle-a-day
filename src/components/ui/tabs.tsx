@@ -5,11 +5,11 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const Tabs = ({
+function Tabs({
   className,
   orientation = "horizontal",
   ...props
-}: TabsPrimitive.Root.Props) => {
+}: Readonly<TabsPrimitive.Root.Props>) {
   return (
     <TabsPrimitive.Root
       className={cn(
@@ -21,7 +21,7 @@ const Tabs = ({
       {...props}
     />
   );
-};
+}
 
 const tabsListVariants = cva(
   "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
@@ -38,11 +38,11 @@ const tabsListVariants = cva(
   },
 );
 
-const TabsList = ({
+function TabsList({
   className,
   variant = "default",
   ...props
-}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) => {
+}: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
   return (
     <TabsPrimitive.List
       className={cn(tabsListVariants({ variant }), className)}
@@ -51,9 +51,12 @@ const TabsList = ({
       {...props}
     />
   );
-};
+}
 
-const TabsTrigger = ({ className, ...props }: TabsPrimitive.Tab.Props) => {
+function TabsTrigger({
+  className,
+  ...props
+}: Readonly<TabsPrimitive.Tab.Props>) {
   return (
     <TabsPrimitive.Tab
       className={cn(
@@ -67,9 +70,12 @@ const TabsTrigger = ({ className, ...props }: TabsPrimitive.Tab.Props) => {
       {...props}
     />
   );
-};
+}
 
-const TabsContent = ({ className, ...props }: TabsPrimitive.Panel.Props) => {
+function TabsContent({
+  className,
+  ...props
+}: Readonly<TabsPrimitive.Panel.Props>) {
   return (
     <TabsPrimitive.Panel
       className={cn("flex-1 text-sm outline-none", className)}
@@ -77,6 +83,6 @@ const TabsContent = ({ className, ...props }: TabsPrimitive.Panel.Props) => {
       {...props}
     />
   );
-};
+}
 
 export { Tabs, TabsContent, TabsList, tabsListVariants, TabsTrigger };

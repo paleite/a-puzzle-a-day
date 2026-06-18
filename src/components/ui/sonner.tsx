@@ -10,7 +10,7 @@ import {
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-const Toaster = ({ ...props }: ToasterProps) => {
+function Toaster({ ...props }: Readonly<ToasterProps>) {
   const { theme } = useTheme();
   const resolvedTheme = (theme ?? "system") as NonNullable<
     ToasterProps["theme"]
@@ -43,6 +43,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       {...props}
     />
   );
-};
+}
 
 export { Toaster };

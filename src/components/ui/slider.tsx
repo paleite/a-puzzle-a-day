@@ -2,14 +2,14 @@ import { Slider as SliderPrimitive } from "@base-ui/react/slider";
 
 import { cn } from "@/lib/utils";
 
-const Slider = ({
+function Slider({
   className,
   defaultValue,
   value,
   min = 0,
   max = 100,
   ...props
-}: SliderPrimitive.Root.Props) => {
+}: Readonly<SliderPrimitive.Root.Props>) {
   const _values = Array.isArray(value)
     ? value
     : Array.isArray(defaultValue)
@@ -47,6 +47,6 @@ const Slider = ({
       </SliderPrimitive.Control>
     </SliderPrimitive.Root>
   );
-};
+}
 
 export { Slider };

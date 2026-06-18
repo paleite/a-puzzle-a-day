@@ -8,12 +8,9 @@ import { cn } from "@/lib/utils";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata: Metadata = {
-  title: "A Puzzle A Day",
-  description: "Daily calendar packing puzzle.",
-};
+export const metadata: Metadata = {};
 
-const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
+function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html className={cn("font-sans", geist.variable)} lang="en">
       <body className="antialiased">
@@ -21,6 +18,6 @@ const RootLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
       </body>
     </html>
   );
-};
+}
 
 export default RootLayout;

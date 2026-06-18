@@ -5,7 +5,10 @@ import { CheckIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Checkbox = ({ className, ...props }: CheckboxPrimitive.Root.Props) => {
+function Checkbox({
+  className,
+  ...props
+}: Readonly<CheckboxPrimitive.Root.Props>) {
   return (
     <CheckboxPrimitive.Root
       className={cn(
@@ -23,6 +26,6 @@ const Checkbox = ({ className, ...props }: CheckboxPrimitive.Root.Props) => {
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );
-};
+}
 
 export { Checkbox };

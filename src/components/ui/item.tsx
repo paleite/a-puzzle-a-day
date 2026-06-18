@@ -6,7 +6,7 @@ import * as React from "react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-const ItemGroup = ({ className, ...props }: React.ComponentProps<"div">) => {
+function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -18,12 +18,12 @@ const ItemGroup = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const ItemSeparator = ({
+function ItemSeparator({
   className,
   ...props
-}: React.ComponentProps<typeof Separator>) => {
+}: React.ComponentProps<typeof Separator>) {
   return (
     <Separator
       className={cn("my-2", className)}
@@ -32,7 +32,7 @@ const ItemSeparator = ({
       {...props}
     />
   );
-};
+}
 
 const itemVariants = cva(
   "group/item flex w-full flex-wrap items-center rounded-lg border text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors [a]:hover:bg-muted",
@@ -97,11 +97,11 @@ const itemMediaVariants = cva(
   },
 );
 
-const ItemMedia = ({
+function ItemMedia({
   className,
   variant = "default",
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof itemMediaVariants>) => {
+}: React.ComponentProps<"div"> & VariantProps<typeof itemMediaVariants>) {
   return (
     <div
       className={cn(itemMediaVariants({ variant, className }))}
@@ -110,9 +110,9 @@ const ItemMedia = ({
       {...props}
     />
   );
-};
+}
 
-const ItemContent = ({ className, ...props }: React.ComponentProps<"div">) => {
+function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -123,9 +123,9 @@ const ItemContent = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const ItemTitle = ({ className, ...props }: React.ComponentProps<"div">) => {
+function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -136,12 +136,9 @@ const ItemTitle = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const ItemDescription = ({
-  className,
-  ...props
-}: React.ComponentProps<"p">) => {
+function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       className={cn(
@@ -152,9 +149,9 @@ const ItemDescription = ({
       {...props}
     />
   );
-};
+}
 
-const ItemActions = ({ className, ...props }: React.ComponentProps<"div">) => {
+function ItemActions({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("flex items-center gap-2", className)}
@@ -162,9 +159,9 @@ const ItemActions = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const ItemHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
+function ItemHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -175,9 +172,9 @@ const ItemHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const ItemFooter = ({ className, ...props }: React.ComponentProps<"div">) => {
+function ItemFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -188,7 +185,7 @@ const ItemFooter = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
 export {
   Item,

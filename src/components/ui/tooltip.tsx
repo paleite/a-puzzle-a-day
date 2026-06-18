@@ -4,10 +4,10 @@ import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 
 import { cn } from "@/lib/utils";
 
-const TooltipProvider = ({
+function TooltipProvider({
   delay = 0,
   ...props
-}: TooltipPrimitive.Provider.Props) => {
+}: Readonly<TooltipPrimitive.Provider.Props>) {
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
@@ -15,17 +15,19 @@ const TooltipProvider = ({
       {...props}
     />
   );
-};
+}
 
-const Tooltip = ({ ...props }: TooltipPrimitive.Root.Props) => {
+function Tooltip({ ...props }: Readonly<TooltipPrimitive.Root.Props>) {
   return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
-};
+}
 
-const TooltipTrigger = ({ ...props }: TooltipPrimitive.Trigger.Props) => {
+function TooltipTrigger({
+  ...props
+}: Readonly<TooltipPrimitive.Trigger.Props>) {
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
-};
+}
 
-const TooltipContent = ({
+function TooltipContent({
   className,
   side = "top",
   sideOffset = 4,
@@ -37,7 +39,7 @@ const TooltipContent = ({
   Pick<
     TooltipPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
-  >) => {
+  >) {
   return (
     <TooltipPrimitive.Portal>
       <TooltipPrimitive.Positioner
@@ -61,6 +63,6 @@ const TooltipContent = ({
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>
   );
-};
+}
 
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger };

@@ -3,7 +3,10 @@ import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Accordion = ({ className, ...props }: AccordionPrimitive.Root.Props) => {
+function Accordion({
+  className,
+  ...props
+}: Readonly<AccordionPrimitive.Root.Props>) {
   return (
     <AccordionPrimitive.Root
       className={cn("flex w-full flex-col", className)}
@@ -11,12 +14,12 @@ const Accordion = ({ className, ...props }: AccordionPrimitive.Root.Props) => {
       {...props}
     />
   );
-};
+}
 
-const AccordionItem = ({
+function AccordionItem({
   className,
   ...props
-}: AccordionPrimitive.Item.Props) => {
+}: Readonly<AccordionPrimitive.Item.Props>) {
   return (
     <AccordionPrimitive.Item
       className={cn("not-last:border-b", className)}
@@ -24,13 +27,13 @@ const AccordionItem = ({
       {...props}
     />
   );
-};
+}
 
-const AccordionTrigger = ({
+function AccordionTrigger({
   className,
   children,
   ...props
-}: AccordionPrimitive.Trigger.Props) => {
+}: Readonly<AccordionPrimitive.Trigger.Props>) {
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
@@ -53,13 +56,13 @@ const AccordionTrigger = ({
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   );
-};
+}
 
-const AccordionContent = ({
+function AccordionContent({
   className,
   children,
   ...props
-}: AccordionPrimitive.Panel.Props) => {
+}: Readonly<AccordionPrimitive.Panel.Props>) {
   return (
     <AccordionPrimitive.Panel
       className="overflow-hidden text-sm data-open:animate-accordion-down data-closed:animate-accordion-up"
@@ -76,6 +79,6 @@ const AccordionContent = ({
       </div>
     </AccordionPrimitive.Panel>
   );
-};
+}
 
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger };

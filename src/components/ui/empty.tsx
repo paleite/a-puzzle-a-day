@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const Empty = ({ className, ...props }: React.ComponentProps<"div">) => {
+function Empty({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -13,9 +13,9 @@ const Empty = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const EmptyHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
+function EmptyHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("flex max-w-sm flex-col items-center gap-2", className)}
@@ -23,7 +23,7 @@ const EmptyHeader = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
 const emptyMediaVariants = cva(
   "mb-2 flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -40,11 +40,11 @@ const emptyMediaVariants = cva(
   },
 );
 
-const EmptyMedia = ({
+function EmptyMedia({
   className,
   variant = "default",
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof emptyMediaVariants>) => {
+}: React.ComponentProps<"div"> & VariantProps<typeof emptyMediaVariants>) {
   return (
     <div
       className={cn(emptyMediaVariants({ variant, className }))}
@@ -53,9 +53,9 @@ const EmptyMedia = ({
       {...props}
     />
   );
-};
+}
 
-const EmptyTitle = ({ className, ...props }: React.ComponentProps<"div">) => {
+function EmptyTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -66,12 +66,9 @@ const EmptyTitle = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const EmptyDescription = ({
-  className,
-  ...props
-}: React.ComponentProps<"p">) => {
+function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <div
       className={cn(
@@ -82,9 +79,9 @@ const EmptyDescription = ({
       {...props}
     />
   );
-};
+}
 
-const EmptyContent = ({ className, ...props }: React.ComponentProps<"div">) => {
+function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -95,7 +92,7 @@ const EmptyContent = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
 export {
   Empty,

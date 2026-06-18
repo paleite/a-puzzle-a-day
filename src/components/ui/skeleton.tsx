@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-const Skeleton = ({ className, ...props }: React.ComponentProps<"div">) => {
+function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn("animate-pulse rounded-md bg-muted", className)}
@@ -8,6 +8,6 @@ const Skeleton = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
 export { Skeleton };

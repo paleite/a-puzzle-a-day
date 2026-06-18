@@ -2,10 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Textarea = ({
-  className,
-  ...props
-}: React.ComponentProps<"textarea">) => {
+function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
       className={cn(
@@ -16,6 +13,6 @@ const Textarea = ({
       {...props}
     />
   );
-};
+}
 
 export { Textarea };

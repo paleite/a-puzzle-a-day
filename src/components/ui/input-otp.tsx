@@ -6,13 +6,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const InputOTP = ({
+function InputOTP({
   className,
   containerClassName,
   ...props
 }: React.ComponentProps<typeof OTPInput> & {
   containerClassName?: string;
-}) => {
+}) {
   return (
     <OTPInput
       className={cn("disabled:cursor-not-allowed", className)}
@@ -25,12 +25,9 @@ const InputOTP = ({
       {...props}
     />
   );
-};
+}
 
-const InputOTPGroup = ({
-  className,
-  ...props
-}: React.ComponentProps<"div">) => {
+function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -41,17 +38,17 @@ const InputOTPGroup = ({
       {...props}
     />
   );
-};
+}
 
-const InputOTPSlot = ({
+function InputOTPSlot({
   index,
   className,
   ...props
 }: React.ComponentProps<"div"> & {
   index: number;
-}) => {
+}) {
   const inputOTPContext = React.useContext(OTPInputContext);
-  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {};
+  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index] ?? {};
 
   return (
     <div
@@ -71,9 +68,9 @@ const InputOTPSlot = ({
       )}
     </div>
   );
-};
+}
 
-const InputOTPSeparator = ({ ...props }: React.ComponentProps<"div">) => {
+function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className="flex items-center [&_svg:not([class*='size-'])]:size-4"
@@ -84,6 +81,6 @@ const InputOTPSeparator = ({ ...props }: React.ComponentProps<"div">) => {
       <MinusIcon />
     </div>
   );
-};
+}
 
 export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot };

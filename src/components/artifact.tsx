@@ -332,10 +332,12 @@ function rotateMatrixClockwise(matrix: Matrix): Matrix {
   const rowCount = matrix.length;
   const columnCount = matrix[0]?.length ?? 0;
 
-  const rotatedMatrix = Array.from({ length: columnCount }, (_, rowIndex) =>
-    Array.from({ length: rowCount }, (_, columnIndex) =>
-      Number(Boolean(matrix[rowCount - 1 - columnIndex]?.[rowIndex])),
-    ),
+  const rotatedMatrix = Array.from(
+    { length: columnCount },
+    (_rowIterable, rowIndex) =>
+      Array.from({ length: rowCount }, (_columnIterable, columnIndex) =>
+        Number(Boolean(matrix[rowCount - 1 - columnIndex]?.[rowIndex])),
+      ),
   );
 
   return normalizeMatrix(rotatedMatrix);
@@ -614,7 +616,146 @@ function derivePuzzleState(
   };
 }
 
-const Artifact = () => {
+function PuzzlePiece({
+  piece,
+  isDragging,
+  isInvalid,
+  isSelected,
+  onPointerDown,
+}: {
+  piece: PieceState;
+  isDragging: boolean;
+  isInvalid: boolean;
+  isSelected: boolean;
+  onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
+}) {
+  const topLeft = getPieceTopLeft(piece);
+  const dimensions = getPieceDimensions(piece.matrix);
+
+  const occupiedCells: CellCoordinate[] = [];
+
+  forEachOccupiedMatrixCell(piece.matrix, (rowIndex, columnIndex) => {
+    occupiedCells.push({ rowIndex, columnIndex });
+  });
+
+  const centroid = occupiedCells.reduce(
+    (currentCentroid, cell) => ({
+      x: currentCentroid.x + cell.columnIndex * cellStep + cellSize / 2,
+      y: currentCentroid.y + cell.rowIndex * cellStep + cellSize / 2,
+    }),
+    { x: 0, y: 0 },
+  );
+
+  const labelPosition = {
+    x: occupiedCells.length > 0 ? centroid.x / occupiedCells.length : 0,
+    y: occupiedCells.length > 0 ? centroid.y / occupiedCells.length : 0,
+  };
+
+  const borderColor = isInvalid
+    ? "rgba(146, 64, 14, 0.95)"
+    : "rgba(27, 52, 62, 0.72)";
+  const borderStyle = isInvalid ? "dashed" : "solid";
+
+  return (
+    <div
+      className="absolute cursor-grab touch-none select-none active:cursor-grabbing"
+      style={{
+        left: topLeft.x,
+        top: topLeft.y,
+        width: dimensions.width,
+        height: dimensions.height,
+        zIndex: piece.zIndex,
+        opacity: isDragging ? 0.9 : 1,
+        filter: isSelected
+          ? "drop-shadow(0 12px 16px rgba(15, 23, 42, 0.32))"
+          : "drop-shadow(0 6px 8px rgba(15, 23, 42, 0.22))",
+      }}
+      onPointerDown={onPointerDown}
+    >
+      {occupiedCells.map(({ rowIndex, columnIndex }) => {
+        const hasRightNeighbor = Boolean(
+          piece.matrix[rowIndex]?.[columnIndex + 1],
+        );
+        const hasBottomNeighbor = Boolean(
+          piece.matrix[rowIndex + 1]?.[columnIndex],
+        );
+        const hasBottomRightNeighbor = Boolean(
+          piece.matrix[rowIndex + 1]?.[columnIndex + 1],
+        );
+
+        return (
+          <div key={`${rowIndex}:${columnIndex}`}>
+            <div
+              className="absolute rounded-md"
+              style={{
+                left: columnIndex * cellStep,
+                top: rowIndex * cellStep,
+                width: cellSize,
+                height: cellSize,
+                background: piece.color,
+                border: `2px ${borderStyle} ${borderColor}`,
+                boxShadow: isSelected
+                  ? "inset 0 1px 0 rgba(255,255,255,.55), 0 0 0 3px rgba(255,255,255,.35)"
+                  : "inset 0 1px 0 rgba(255,255,255,.45)",
+              }}
+            />
+
+            {hasRightNeighbor ? (
+              <div
+                className="absolute"
+                style={{
+                  left: columnIndex * cellStep + cellSize - 1,
+                  top: rowIndex * cellStep + 3,
+                  width: cellGap + 2,
+                  height: cellSize - 6,
+                  background: piece.color,
+                }}
+              />
+            ) : null}
+
+            {hasBottomNeighbor ? (
+              <div
+                className="absolute"
+                style={{
+                  left: columnIndex * cellStep + 3,
+                  top: rowIndex * cellStep + cellSize - 1,
+                  width: cellSize - 6,
+                  height: cellGap + 2,
+                  background: piece.color,
+                }}
+              />
+            ) : null}
+
+            {hasRightNeighbor && hasBottomNeighbor && hasBottomRightNeighbor ? (
+              <div
+                className="absolute"
+                style={{
+                  left: columnIndex * cellStep + cellSize - 1,
+                  top: rowIndex * cellStep + cellSize - 1,
+                  width: cellGap + 2,
+                  height: cellGap + 2,
+                  background: piece.color,
+                }}
+              />
+            ) : null}
+          </div>
+        );
+      })}
+
+      <div
+        className="pointer-events-none absolute flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/55 text-sm font-black text-slate-900/75 [text-shadow:0_1px_1px_rgba(255,255,255,0.5)]"
+        style={{
+          left: labelPosition.x,
+          top: labelPosition.y,
+        }}
+      >
+        {piece.pieceId}
+      </div>
+    </div>
+  );
+}
+
+function Artifact() {
   const scalerElementRef = useRef<HTMLDivElement | null>(null);
   const stageElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -1178,145 +1319,6 @@ const Artifact = () => {
       </div>
     </main>
   );
-};
+}
 
 export default Artifact;
-
-const PuzzlePiece = ({
-  piece,
-  isDragging,
-  isInvalid,
-  isSelected,
-  onPointerDown,
-}: {
-  piece: PieceState;
-  isDragging: boolean;
-  isInvalid: boolean;
-  isSelected: boolean;
-  onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
-}) => {
-  const topLeft = getPieceTopLeft(piece);
-  const dimensions = getPieceDimensions(piece.matrix);
-
-  const occupiedCells: CellCoordinate[] = [];
-
-  forEachOccupiedMatrixCell(piece.matrix, (rowIndex, columnIndex) => {
-    occupiedCells.push({ rowIndex, columnIndex });
-  });
-
-  const centroid = occupiedCells.reduce(
-    (currentCentroid, cell) => ({
-      x: currentCentroid.x + cell.columnIndex * cellStep + cellSize / 2,
-      y: currentCentroid.y + cell.rowIndex * cellStep + cellSize / 2,
-    }),
-    { x: 0, y: 0 },
-  );
-
-  const labelPosition = {
-    x: occupiedCells.length > 0 ? centroid.x / occupiedCells.length : 0,
-    y: occupiedCells.length > 0 ? centroid.y / occupiedCells.length : 0,
-  };
-
-  const borderColor = isInvalid
-    ? "rgba(146, 64, 14, 0.95)"
-    : "rgba(27, 52, 62, 0.72)";
-  const borderStyle = isInvalid ? "dashed" : "solid";
-
-  return (
-    <div
-      className="absolute cursor-grab touch-none select-none active:cursor-grabbing"
-      style={{
-        left: topLeft.x,
-        top: topLeft.y,
-        width: dimensions.width,
-        height: dimensions.height,
-        zIndex: piece.zIndex,
-        opacity: isDragging ? 0.9 : 1,
-        filter: isSelected
-          ? "drop-shadow(0 12px 16px rgba(15, 23, 42, 0.32))"
-          : "drop-shadow(0 6px 8px rgba(15, 23, 42, 0.22))",
-      }}
-      onPointerDown={onPointerDown}
-    >
-      {occupiedCells.map(({ rowIndex, columnIndex }) => {
-        const hasRightNeighbor = Boolean(
-          piece.matrix[rowIndex]?.[columnIndex + 1],
-        );
-        const hasBottomNeighbor = Boolean(
-          piece.matrix[rowIndex + 1]?.[columnIndex],
-        );
-        const hasBottomRightNeighbor = Boolean(
-          piece.matrix[rowIndex + 1]?.[columnIndex + 1],
-        );
-
-        return (
-          <div key={`${rowIndex}:${columnIndex}`}>
-            <div
-              className="absolute rounded-md"
-              style={{
-                left: columnIndex * cellStep,
-                top: rowIndex * cellStep,
-                width: cellSize,
-                height: cellSize,
-                background: piece.color,
-                border: `2px ${borderStyle} ${borderColor}`,
-                boxShadow: isSelected
-                  ? "inset 0 1px 0 rgba(255,255,255,.55), 0 0 0 3px rgba(255,255,255,.35)"
-                  : "inset 0 1px 0 rgba(255,255,255,.45)",
-              }}
-            />
-
-            {hasRightNeighbor ? (
-              <div
-                className="absolute"
-                style={{
-                  left: columnIndex * cellStep + cellSize - 1,
-                  top: rowIndex * cellStep + 3,
-                  width: cellGap + 2,
-                  height: cellSize - 6,
-                  background: piece.color,
-                }}
-              />
-            ) : null}
-
-            {hasBottomNeighbor ? (
-              <div
-                className="absolute"
-                style={{
-                  left: columnIndex * cellStep + 3,
-                  top: rowIndex * cellStep + cellSize - 1,
-                  width: cellSize - 6,
-                  height: cellGap + 2,
-                  background: piece.color,
-                }}
-              />
-            ) : null}
-
-            {hasRightNeighbor && hasBottomNeighbor && hasBottomRightNeighbor ? (
-              <div
-                className="absolute"
-                style={{
-                  left: columnIndex * cellStep + cellSize - 1,
-                  top: rowIndex * cellStep + cellSize - 1,
-                  width: cellGap + 2,
-                  height: cellGap + 2,
-                  background: piece.color,
-                }}
-              />
-            ) : null}
-          </div>
-        );
-      })}
-
-      <div
-        className="pointer-events-none absolute flex size-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/55 text-sm font-black text-slate-900/75 [text-shadow:0_1px_1px_rgba(255,255,255,0.5)]"
-        style={{
-          left: labelPosition.x,
-          top: labelPosition.y,
-        }}
-      >
-        {piece.pieceId}
-      </div>
-    </div>
-  );
-};

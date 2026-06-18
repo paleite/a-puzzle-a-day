@@ -5,7 +5,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Breadcrumb = ({ className, ...props }: React.ComponentProps<"nav">) => {
+function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
       aria-label="breadcrumb"
@@ -14,12 +14,9 @@ const Breadcrumb = ({ className, ...props }: React.ComponentProps<"nav">) => {
       {...props}
     />
   );
-};
+}
 
-const BreadcrumbList = ({
-  className,
-  ...props
-}: React.ComponentProps<"ol">) => {
+function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
   return (
     <ol
       className={cn(
@@ -30,12 +27,9 @@ const BreadcrumbList = ({
       {...props}
     />
   );
-};
+}
 
-const BreadcrumbItem = ({
-  className,
-  ...props
-}: React.ComponentProps<"li">) => {
+function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
     <li
       className={cn("inline-flex items-center gap-1", className)}
@@ -43,7 +37,7 @@ const BreadcrumbItem = ({
       {...props}
     />
   );
-};
+}
 
 function BreadcrumbLink({
   className,
@@ -65,10 +59,7 @@ function BreadcrumbLink({
   });
 }
 
-const BreadcrumbPage = ({
-  className,
-  ...props
-}: React.ComponentProps<"span">) => {
+function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       aria-current="page"
@@ -79,13 +70,13 @@ const BreadcrumbPage = ({
       {...props}
     />
   );
-};
+}
 
-const BreadcrumbSeparator = ({
+function BreadcrumbSeparator({
   children,
   className,
   ...props
-}: React.ComponentProps<"li">) => {
+}: React.ComponentProps<"li">) {
   return (
     <li
       aria-hidden="true"
@@ -97,12 +88,12 @@ const BreadcrumbSeparator = ({
       {children ?? <ChevronRightIcon />}
     </li>
   );
-};
+}
 
-const BreadcrumbEllipsis = ({
+function BreadcrumbEllipsis({
   className,
   ...props
-}: React.ComponentProps<"span">) => {
+}: React.ComponentProps<"span">) {
   return (
     <span
       aria-hidden="true"
@@ -118,7 +109,7 @@ const BreadcrumbEllipsis = ({
       <span className="sr-only">More</span>
     </span>
   );
-};
+}
 
 export {
   Breadcrumb,

@@ -5,13 +5,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Avatar = ({
+function Avatar({
   className,
   size = "default",
   ...props
 }: AvatarPrimitive.Root.Props & {
   size?: "default" | "sm" | "lg";
-}) => {
+}) {
   return (
     <AvatarPrimitive.Root
       className={cn(
@@ -23,9 +23,12 @@ const Avatar = ({
       {...props}
     />
   );
-};
+}
 
-const AvatarImage = ({ className, ...props }: AvatarPrimitive.Image.Props) => {
+function AvatarImage({
+  className,
+  ...props
+}: Readonly<AvatarPrimitive.Image.Props>) {
   return (
     <AvatarPrimitive.Image
       className={cn(
@@ -36,12 +39,12 @@ const AvatarImage = ({ className, ...props }: AvatarPrimitive.Image.Props) => {
       {...props}
     />
   );
-};
+}
 
-const AvatarFallback = ({
+function AvatarFallback({
   className,
   ...props
-}: AvatarPrimitive.Fallback.Props) => {
+}: Readonly<AvatarPrimitive.Fallback.Props>) {
   return (
     <AvatarPrimitive.Fallback
       className={cn(
@@ -52,9 +55,9 @@ const AvatarFallback = ({
       {...props}
     />
   );
-};
+}
 
-const AvatarBadge = ({ className, ...props }: React.ComponentProps<"span">) => {
+function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
@@ -68,9 +71,9 @@ const AvatarBadge = ({ className, ...props }: React.ComponentProps<"span">) => {
       {...props}
     />
   );
-};
+}
 
-const AvatarGroup = ({ className, ...props }: React.ComponentProps<"div">) => {
+function AvatarGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -81,12 +84,12 @@ const AvatarGroup = ({ className, ...props }: React.ComponentProps<"div">) => {
       {...props}
     />
   );
-};
+}
 
-const AvatarGroupCount = ({
+function AvatarGroupCount({
   className,
   ...props
-}: React.ComponentProps<"div">) => {
+}: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -97,7 +100,7 @@ const AvatarGroupCount = ({
       {...props}
     />
   );
-};
+}
 
 export {
   Avatar,
