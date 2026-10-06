@@ -1,2 +1,4 @@
 pnpm-lock.yaml
 .pnpm-store/
+
+src/data/a-puzzle-a-day-all-solutions.json

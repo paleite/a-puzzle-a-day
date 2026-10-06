@@ -2,6 +2,7 @@
 import type { PointerEvent, PointerEventHandler } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { TodaysHintDialog } from "@/components/todays-hint-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -712,6 +713,7 @@ function Artifact() {
   const [selectedPieceId, setSelectedPieceId] = useState<PieceId | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [isSolvedModalOpen, setIsSolvedModalOpen] = useState(false);
+  const [isHintModalOpen, setIsHintModalOpen] = useState(false);
   const wasSolvedRef = useRef(false);
 
   const derivedPuzzleState = useMemo(
@@ -999,6 +1001,7 @@ function Artifact() {
     setSelectedPieceId(null);
     setDragState(null);
     setIsSolvedModalOpen(false);
+    setIsHintModalOpen(false);
     setPieces(createInitialPieces());
   }
 
@@ -1038,6 +1041,12 @@ function Artifact() {
         </DialogContent>
       </Dialog>
 
+      <TodaysHintDialog
+        open={isHintModalOpen}
+        puzzleDate={puzzleDate}
+        onOpenChange={setIsHintModalOpen}
+      />
+
       <div className="mx-auto max-w-5xl">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-amber-950/10 bg-amber-100/85 px-4 py-3 shadow-xl backdrop-blur">
           <div>
@@ -1075,6 +1084,14 @@ function Artifact() {
               onClick={() => setDateAndReset(shiftPuzzleDate(puzzleDate, 1))}
             >
               Next day
+            </Button>
+
+            <Button
+              className="rounded-full bg-emerald-800 text-emerald-50 hover:bg-emerald-700"
+              type="button"
+              onClick={() => setIsHintModalOpen(true)}
+            >
+              Today&apos;s hint
             </Button>
 
             <Button
