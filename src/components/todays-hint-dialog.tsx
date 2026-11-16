@@ -160,7 +160,7 @@ function HintBoard({
   }, [revealedHints]);
 
   return (
-    <div className="aspect-square h-full max-h-full max-w-full overflow-hidden rounded-[1.25rem] border border-amber-950/20 bg-[#e5d2a7] p-2 shadow-inner sm:p-3">
+    <div className="aspect-square w-[min(100cqw,100cqh)] max-h-full max-w-full overflow-hidden rounded-[1.25rem] border border-amber-950/20 bg-[#e5d2a7] p-2 shadow-inner sm:p-3">
       <div className="grid h-full w-full grid-cols-7 grid-rows-7 gap-1 sm:gap-1.5">
         {boardCells.flatMap((row, rowIndex) =>
           row.map((boardCell, columnIndex) => {
@@ -169,7 +169,7 @@ function HintBoard({
                 <div
                   key={`${rowIndex}:${columnIndex}`}
                   aria-hidden="true"
-                  className="min-h-0 min-w-0"
+                  className="aspect-square min-h-0 min-w-0"
                 />
               );
             }
@@ -181,7 +181,7 @@ function HintBoard({
               <div
                 key={`${rowIndex}:${columnIndex}`}
                 className={cn(
-                  "relative flex min-h-0 min-w-0 items-center justify-center rounded-md border text-[0.55rem] font-bold sm:text-xs",
+                  "relative flex aspect-square min-h-0 min-w-0 items-center justify-center rounded-md border text-[0.55rem] font-bold sm:text-xs",
                   target && "border-amber-950/80 bg-[#d6c49c] text-amber-950",
                   !target &&
                     !pieceId &&
@@ -343,7 +343,7 @@ export function TodaysHintDialog({
           </div>
         ) : (
           <div className="flex min-h-0 min-w-0 flex-col gap-2 px-3 py-3 sm:gap-3 sm:px-6">
-            <div className="flex min-h-0 flex-1 items-center justify-center">
+            <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">
               <HintBoard puzzleDate={puzzleDate} revealedHints={revealedHints} />
             </div>
 
