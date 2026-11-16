@@ -15,6 +15,7 @@ import {
   filterSolutionsByHint,
   getHintAlternatives,
   getPuzzleSolutions,
+  puzzlePieceIds,
   type HintStep,
   type HintStrategy,
   type PuzzleDate,
@@ -256,7 +257,7 @@ export function TodaysHintDialog({
     ? [...acceptedHints, currentHint]
     : acceptedHints;
   const revealedHintCount = revealedHints.length;
-  const isComplete = acceptedHints.length === 8;
+  const isComplete = acceptedHints.length === puzzlePieceIds.length;
 
   function selectStrategy(nextStrategy: HintStrategy) {
     setStrategy(nextStrategy);
@@ -328,20 +329,16 @@ export function TodaysHintDialog({
               <span className="block text-lg font-black text-amber-950">
                 Keep it challenging
               </span>
-
-              
             </button>
 
             <button
-              className="rounded-2xl border border-amber-950/15 bg-white/70 p-5 text-left transition hover:border-amber-950/30 hover:bg-white"
+              className="rounded-2xl border border-amber-950/15 bg-white/70 p-4 text-left transition hover:border-amber-950/30 hover:bg-white"
               type="button"
               onClick={() => selectStrategy("reduce-options")}
             >
               <span className="block text-lg font-black text-amber-950">
                 Give me a stronger hint
               </span>
-
-              
             </button>
           </div>
         ) : (
@@ -421,7 +418,9 @@ export function TodaysHintDialog({
                 type="button"
                 onClick={revealNextHint}
               >
-                {currentHint ? (acceptedHints.length === 7 ? "Finish" : "Next hint") : "All pieces revealed"}
+                {currentHint ? (acceptedHints.length === puzzlePieceIds.length - 1
+                    ? "Finish"
+                    : "Next hint") : "All pieces revealed"}
               </Button>
             </>
           ) : (
