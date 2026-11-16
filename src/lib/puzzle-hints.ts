@@ -82,13 +82,13 @@ export function getPuzzleSolutions(puzzleDate: PuzzleDate): PuzzleSolution[] {
   return solutionsData[monthKey]?.[dayKey] ?? [];
 }
 
-export function getNextHint(
+export function getHintAlternatives(
   candidateSolutions: PuzzleSolution[],
   revealedPieceIds: ReadonlySet<PuzzlePieceId>,
   strategy: HintStrategy,
-): HintStep | null {
+): HintStep[] {
   if (candidateSolutions.length === 0) {
-    return null;
+    return [];
   }
 
   const placementGroups = new Map<
@@ -126,7 +126,7 @@ export function getNextHint(
   const candidates = [...placementGroups.values()];
 
   if (candidates.length === 0) {
-    return null;
+    return [];
   }
 
   candidates.sort((firstCandidate, secondCandidate) => {
@@ -151,18 +151,20 @@ export function getNextHint(
       .localeCompare(secondCandidate.cells.join("|"));
   });
 
-  const selectedPlacement = candidates[0];
-
-  if (!selectedPlacement) {
-    return null;
-  }
-
-  return {
-    pieceId: selectedPlacement.pieceId,
-    cells: selectedPlacement.cells,
+  return candidates.map((placement) => ({
+    pieceId: placement.pieceId,
+    cells: placement.cells,
     candidatesBefore: candidateSolutions.length,
-    candidatesAfter: selectedPlacement.supportCount,
-  };
+    candidatesAfter: placement.supportCount,
+  }));
+}
+
+export function getNextHint(
+  candidateSolutions: PuzzleSolution[],
+  revealedPieceIds: ReadonlySet<PuzzlePieceId>,
+  strategy: HintStrategy,
+): HintStep | null {
+  return getHintAlternatives(candidateSolutions, revealedPieceIds, strategy)[0] ?? null;
 }
 
 export function filterSolutionsByHint(
