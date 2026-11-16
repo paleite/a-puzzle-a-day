@@ -2,6 +2,7 @@
 
 import type { PointerEvent, RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 export type Point = { x: number; y: number };
 
@@ -15,6 +16,7 @@ type StageBounds = {
 type DragSession<PieceId extends string> = {
   pieceId: PieceId;
   pointerId: number;
+  captureElement: HTMLDivElement;
   origin: Point;
   grabOffset: Point;
   bounds: StageBounds;
@@ -90,6 +92,9 @@ export function usePieceDrag<PieceId extends string>({
     }
 
     dragSessionRef.current = null;
+    if (session.captureElement.hasPointerCapture(session.pointerId)) {
+      session.captureElement.releasePointerCapture(session.pointerId);
+    }
     if (session.animationFrameId !== null) {
       window.cancelAnimationFrame(session.animationFrameId);
     }
@@ -126,9 +131,11 @@ export function usePieceDrag<PieceId extends string>({
       };
       const pointer = getStagePointerPosition(event, bounds, stageSize);
 
+      event.currentTarget.setPointerCapture(event.pointerId);
       dragSessionRef.current = {
         pieceId,
         pointerId: event.pointerId,
+        captureElement: event.currentTarget,
         origin,
         grabOffset: {
           x: pointer.x - origin.x,
@@ -197,13 +204,24 @@ export function usePieceDrag<PieceId extends string>({
         session.grabOffset,
       );
 
-      // React 19 batches the placement and presentation updates from this
-      // event. The layout effect below removes the transform after commit.
-      onDropRef.current(session.pieceId, releasePosition);
-      stopDrag();
+      // Commit the domain placement and end the presentation together.
+      // flushSync is used only once per drop, never during pointer movement.
+      // The layout effect clears the visual transform after this commit,
+      // guaranteeing there is no frame with stale logical and visual positions.
+      flushSync(() => {
+        onDropRef.current(session.pieceId, releasePosition);
+        stopDrag();
+      });
     }
 
     function handlePointerCancel(event: globalThis.PointerEvent) {
+      const session = dragSessionRef.current;
+      if (session && event.pointerId === session.pointerId) {
+        stopDrag();
+      }
+    }
+
+    function handleLostPointerCapture(event: globalThis.PointerEvent) {
       const session = dragSessionRef.current;
       if (session && event.pointerId === session.pointerId) {
         stopDrag();
@@ -219,12 +237,14 @@ export function usePieceDrag<PieceId extends string>({
     });
     document.addEventListener("pointerup", handlePointerUp, { passive: false });
     document.addEventListener("pointercancel", handlePointerCancel);
+    document.addEventListener("lostpointercapture", handleLostPointerCapture);
     window.addEventListener("blur", handleWindowBlur);
 
     return () => {
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerup", handlePointerUp);
       document.removeEventListener("pointercancel", handlePointerCancel);
+      document.removeEventListener("lostpointercapture", handleLostPointerCapture);
       window.removeEventListener("blur", handleWindowBlur);
       const session = dragSessionRef.current;
       if (session?.animationFrameId !== null && session?.animationFrameId !== undefined) {
