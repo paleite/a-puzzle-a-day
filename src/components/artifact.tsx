@@ -3,6 +3,10 @@ import type { PointerEvent, PointerEventHandler } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { usePieceDrag } from "@/hooks/use-piece-drag";
+import {
+  resolvePieceDropLocation,
+  type PieceLocation,
+} from "@/lib/puzzle-placement";
 
 import { TodaysHintDialog } from "@/components/todays-hint-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -42,12 +46,6 @@ type Matrix = number[][];
 type Point = { x: number; y: number };
 
 type CellCoordinate = { rowIndex: number; columnIndex: number };
-
-type TabletopLocation = { type: "tabletop"; x: number; y: number };
-
-type BoardLocation = { type: "board"; rowIndex: number; columnIndex: number };
-
-type PieceLocation = TabletopLocation | BoardLocation;
 
 type PieceDefinition = { color: string; home: Point; matrix: Matrix };
 
@@ -421,44 +419,6 @@ function getPieceTopLeft(piece: PieceState): Point {
   return { x: piece.location.x, y: piece.location.y };
 }
 
-function getSnappedBoardLocation(
-  left: number,
-  top: number,
-  matrix: Matrix,
-): BoardLocation | null {
-  const dimensions = getPieceDimensions(matrix);
-
-  const pieceRectangle = {
-    left,
-    top,
-    right: left + dimensions.width,
-    bottom: top + dimensions.height,
-  };
-
-  const snapRectangle = {
-    left: boardLeft - cellStep * 1.5,
-    top: boardTop - cellStep * 1.5,
-    right: boardLeft + boardWidth + cellStep * 1.5,
-    bottom: boardTop + boardHeight + cellStep * 1.5,
-  };
-
-  const intersectsBoardSnapArea =
-    pieceRectangle.right >= snapRectangle.left &&
-    pieceRectangle.left <= snapRectangle.right &&
-    pieceRectangle.bottom >= snapRectangle.top &&
-    pieceRectangle.top <= snapRectangle.bottom;
-
-  if (!intersectsBoardSnapArea) {
-    return null;
-  }
-
-  return {
-    type: "board",
-    rowIndex: Math.round((top - boardTop) / cellStep),
-    columnIndex: Math.round((left - boardLeft) / cellStep),
-  };
-}
-
 function getPieceOccupiedBoardCells(piece: PieceState): OccupiedBoardCell[] {
   const { location } = piece;
 
@@ -772,23 +732,23 @@ function Artifact() {
   const commitPieceDrop = useCallback((pieceId: PieceId, position: Point) => {
     setPieces((currentPieces) => {
       const currentPiece = currentPieces[pieceId];
-      const snappedBoardLocation = getSnappedBoardLocation(
-        position.x,
-        position.y,
-        currentPiece.matrix,
+      const location = resolvePieceDropLocation(
+        position,
+        getPieceDimensions(currentPiece.matrix),
+        {
+          left: boardLeft,
+          top: boardTop,
+          width: boardWidth,
+          height: boardHeight,
+          cellStep,
+        },
       );
 
       return {
         ...currentPieces,
         [pieceId]: {
           ...currentPiece,
-          location:
-            snappedBoardLocation ??
-            ({
-              type: "tabletop",
-              x: position.x,
-              y: position.y,
-            } satisfies TabletopLocation),
+          location,
         },
       };
     });
