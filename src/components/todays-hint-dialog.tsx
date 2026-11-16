@@ -12,7 +12,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  buildHintSequence,
+  filterSolutionsByHint,
+  getHintAlternatives,
+  getPuzzleSolutions,
   type HintStep,
   type HintStrategy,
   type PuzzleDate,
@@ -157,8 +159,8 @@ function HintBoard({
   }, [revealedHints]);
 
   return (
-    <div className="mx-auto w-full max-w-[28rem] rounded-[1.5rem] border border-amber-950/20 bg-[#e5d2a7] p-3 shadow-inner">
-      <div className="grid grid-cols-7 gap-1.5">
+    <div className="aspect-square h-full max-h-full max-w-full overflow-hidden rounded-[1.25rem] border border-amber-950/20 bg-[#e5d2a7] p-2 shadow-inner sm:p-3">
+      <div className="grid h-full w-full grid-cols-7 grid-rows-7 gap-1 sm:gap-1.5">
         {boardCells.flatMap((row, rowIndex) =>
           row.map((boardCell, columnIndex) => {
             if (!boardCell.label) {
@@ -166,7 +168,7 @@ function HintBoard({
                 <div
                   key={`${rowIndex}:${columnIndex}`}
                   aria-hidden="true"
-                  className="aspect-square"
+                  className="min-h-0 min-w-0"
                 />
               );
             }
@@ -178,7 +180,7 @@ function HintBoard({
               <div
                 key={`${rowIndex}:${columnIndex}`}
                 className={cn(
-                  "relative flex aspect-square items-center justify-center rounded-md border text-[0.65rem] font-bold sm:text-xs",
+                  "relative flex min-h-0 min-w-0 items-center justify-center rounded-md border text-[0.55rem] font-bold sm:text-xs",
                   target && "border-amber-950/80 bg-[#d6c49c] text-amber-950",
                   !target &&
                     !pieceId &&
@@ -196,7 +198,7 @@ function HintBoard({
                 {pieceId ? (
                   <span
                     aria-label={`Piece ${pieceId} covers ${boardCell.label}`}
-                    className="text-sm font-black"
+                    className="text-xs font-black sm:text-sm"
                   >
                     {pieceId}
                   </span>
@@ -224,36 +226,67 @@ export function TodaysHintDialog({
   onOpenChange,
 }: TodaysHintDialogProps) {
   const [strategy, setStrategy] = useState<HintStrategy | null>(null);
-  const [revealedHintCount, setRevealedHintCount] = useState(0);
+  const [acceptedHints, setAcceptedHints] = useState<HintStep[]>([]);
+  const [alternativeIndex, setAlternativeIndex] = useState(0);
 
-  const hintSequence = useMemo(() => {
-    if (!strategy) {
-      return [];
-    }
+  const candidateSolutions = useMemo(
+    () =>
+      acceptedHints.reduce(
+        (solutions, hint) => filterSolutionsByHint(solutions, hint),
+        getPuzzleSolutions(puzzleDate),
+      ),
+    [acceptedHints, puzzleDate],
+  );
 
-    return buildHintSequence(puzzleDate, strategy);
-  }, [puzzleDate, strategy]);
+  const alternatives = useMemo(
+    () =>
+      strategy
+        ? getHintAlternatives(
+            candidateSolutions,
+            new Set(acceptedHints.map((hint) => hint.pieceId)),
+            strategy,
+          )
+        : [],
+    [acceptedHints, candidateSolutions, strategy],
+  );
 
-  const revealedHints = hintSequence.slice(0, revealedHintCount);
-  const currentHint = revealedHints.at(-1) ?? null;
-
-  const hasMoreHints =
-    strategy !== null && revealedHintCount < hintSequence.length;
+  // The current placement is provisional. Only accepted hints narrow the next step.
+  const currentHint = alternatives[alternativeIndex] ?? null;
+  const revealedHints = currentHint
+    ? [...acceptedHints, currentHint]
+    : acceptedHints;
+  const revealedHintCount = revealedHints.length;
+  const isComplete = acceptedHints.length === 8;
 
   function selectStrategy(nextStrategy: HintStrategy) {
     setStrategy(nextStrategy);
-    setRevealedHintCount(1);
+    setAcceptedHints([]);
+    setAlternativeIndex(0);
+  }
+
+  function cycleAlternative(direction: number) {
+    if (alternatives.length < 2) {
+      return;
+    }
+
+    setAlternativeIndex((index) =>
+      (index + direction + alternatives.length) % alternatives.length,
+    );
   }
 
   function revealNextHint() {
-    setRevealedHintCount((currentCount) =>
-      Math.min(currentCount + 1, hintSequence.length),
-    );
+    if (!currentHint) {
+      return;
+    }
+
+    setAcceptedHints((hints) => [...hints, currentHint]);
+    setAlternativeIndex(0);
   }
 
   function resetDialogState() {
     setStrategy(null);
-    setRevealedHintCount(0);
+    setAcceptedHints([]);
+    setAlternativeIndex(0);
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -266,13 +299,13 @@ export function TodaysHintDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[92svh] max-w-2xl overflow-y-auto rounded-[1.75rem] border border-amber-950/10 bg-amber-50 p-0 text-amber-950 shadow-2xl">
-        <DialogHeader className="gap-3 px-6 pt-6">
-          <p className="text-xs font-semibold tracking-[0.22em] text-emerald-800/70 uppercase">
+      <DialogContent className="grid h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden rounded-[1.25rem] border border-amber-950/10 bg-amber-50 p-0 text-amber-950 shadow-2xl sm:h-[min(760px,calc(100dvh-2rem))] sm:rounded-[1.75rem]">
+        <DialogHeader className="min-w-0 gap-1 px-4 pt-4 pr-12 sm:px-6 sm:pt-5">
+          <p className="text-[0.65rem] font-semibold tracking-[0.22em] text-emerald-800/70 uppercase">
             Hint
           </p>
 
-          <DialogTitle className="text-3xl font-black">
+          <DialogTitle className="text-xl font-black sm:text-2xl">
             {strategy
               ? `Hint ${revealedHintCount} for ${getPuzzleDateLabel(
                   puzzleDate,
@@ -280,19 +313,15 @@ export function TodaysHintDialog({
               : `How much help do you want?`}
           </DialogTitle>
 
-          <DialogDescription className="text-base text-amber-950/75">
-            {strategy
-              ? "Each hint fixes one puzzle piece. Press Next hint only when you want another part of the solution."
-              : `Choose how aggressively the hint should narrow the possible solutions for ${getPuzzleDateLabel(
-                  puzzleDate,
-                )}.`}
+          <DialogDescription className="sr-only">
+            Choose a hint strategy, browse compatible placements, then accept each hint.
           </DialogDescription>
         </DialogHeader>
 
         {!strategy ? (
-          <div className="grid gap-3 px-6 py-6 sm:grid-cols-2">
+          <div className="grid min-h-0 content-center gap-3 px-4 py-4 sm:grid-cols-2 sm:px-6">
             <button
-              className="rounded-2xl border border-amber-950/15 bg-white/70 p-5 text-left transition hover:border-amber-950/30 hover:bg-white"
+              className="rounded-2xl border border-amber-950/15 bg-white/70 p-4 text-left transition hover:border-amber-950/30 hover:bg-white"
               type="button"
               onClick={() => selectStrategy("preserve-options")}
             >
@@ -300,11 +329,7 @@ export function TodaysHintDialog({
                 Keep it challenging
               </span>
 
-              <span className="mt-2 block text-sm leading-relaxed text-amber-950/70">
-                Reveals a piece placement shared by as many remaining solutions
-                as possible. You get useful information while keeping more ways
-                to finish the puzzle.
-              </span>
+              
             </button>
 
             <button
@@ -316,41 +341,69 @@ export function TodaysHintDialog({
                 Give me a stronger hint
               </span>
 
-              <span className="mt-2 block text-sm leading-relaxed text-amber-950/70">
-                Reveals a piece placement that eliminates as many remaining
-                solutions as possible. This moves you toward one concrete
-                solution faster.
-              </span>
+              
             </button>
           </div>
         ) : (
-          <div className="space-y-5 px-6 py-6">
-            <HintBoard puzzleDate={puzzleDate} revealedHints={revealedHints} />
+          <div className="flex min-h-0 min-w-0 flex-col gap-2 px-3 py-3 sm:gap-3 sm:px-6">
+            <div className="flex min-h-0 flex-1 items-center justify-center">
+              <HintBoard puzzleDate={puzzleDate} revealedHints={revealedHints} />
+            </div>
 
-            {currentHint ? (
-              <div className="rounded-2xl border border-amber-950/10 bg-white/65 p-4">
-                <p className="text-lg font-black">
-                  Place piece {currentHint.pieceId}
+            <div className="grid shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-amber-950/10 bg-white/65 p-3">
+              <div className="min-w-0">
+                <p className="font-black">
+                  {currentHint
+                    ? `Place piece ${currentHint.pieceId}`
+                    : isComplete
+                      ? "All pieces revealed"
+                      : "No solution available"}
                 </p>
-
-                <p className="mt-1 text-sm text-amber-950/75">
-                  It covers: {currentHint.cells.join(", ")}
-                </p>
-
-                <p className="mt-3 text-xs font-semibold tracking-wide text-amber-950/55 uppercase">
-                  {currentHint.candidatesAfter} of{" "}
-                  {currentHint.candidatesBefore} candidate solutions remain
-                </p>
+                {currentHint && (
+                  <p className="truncate text-xs text-amber-950/75">
+                    {currentHint.cells.join(", ")}
+                  </p>
+                )}
               </div>
-            ) : (
-              <div className="rounded-2xl border border-amber-950/10 bg-white/65 p-4 text-sm text-amber-950/70">
-                No precomputed solution is available for this date.
+              <p className="whitespace-nowrap text-right text-xs font-semibold text-amber-950/65 tabular-nums">
+                {currentHint
+                  ? `${currentHint.candidatesAfter} of ${currentHint.candidatesBefore} solutions`
+                  : `${candidateSolutions.length} solutions`}
+              </p>
+            </div>
+            {currentHint && (
+              <div className="flex shrink-0 items-center justify-between gap-2">
+                <Button
+                  aria-label="Previous hint alternative"
+                  className="rounded-full"
+                  disabled={alternatives.length < 2}
+                  onClick={() => cycleAlternative(-1)}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <span className="text-xs font-semibold text-amber-950/65 tabular-nums">
+                  Alternative {alternativeIndex + 1} of {alternatives.length}
+                </span>
+                <Button
+                  aria-label="Next hint alternative"
+                  className="rounded-full"
+                  disabled={alternatives.length < 2}
+                  onClick={() => cycleAlternative(1)}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  Next
+                </Button>
               </div>
             )}
           </div>
         )}
 
-        <DialogFooter className="rounded-b-[1.75rem] border-t border-amber-950/10 bg-amber-100/70 px-6 py-4">
+        <DialogFooter className="m-0 flex-row flex-wrap items-center justify-between gap-2 rounded-b-[1.25rem] border-t border-amber-950/10 bg-amber-100/70 px-3 py-3 sm:px-6">
           {strategy ? (
             <>
               <Button
@@ -364,11 +417,11 @@ export function TodaysHintDialog({
 
               <Button
                 className="rounded-full bg-amber-950 text-amber-50 hover:bg-amber-900"
-                disabled={!hasMoreHints}
+                disabled={!currentHint}
                 type="button"
                 onClick={revealNextHint}
               >
-                {hasMoreHints ? "Next hint" : "All pieces revealed"}
+                {currentHint ? (acceptedHints.length === 7 ? "Finish" : "Next hint") : "All pieces revealed"}
               </Button>
             </>
           ) : (
