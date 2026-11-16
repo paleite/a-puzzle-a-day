@@ -1,6 +1,12 @@
 "use client";
 import type { PointerEvent, PointerEventHandler } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { usePieceDrag } from "@/hooks/use-piece-drag";
+import {
+  resolvePieceDropLocation,
+  type PieceLocation,
+} from "@/lib/puzzle-placement";
 
 import { TodaysHintDialog } from "@/components/todays-hint-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +27,7 @@ const cellStep = cellSize + cellGap;
 
 const stageWidth = 760;
 const stageHeight = 640;
+const stageSize = { width: stageWidth, height: stageHeight };
 
 const boardColumnCount = 7;
 const boardRowCount = 7;
@@ -40,12 +47,6 @@ type Point = { x: number; y: number };
 
 type CellCoordinate = { rowIndex: number; columnIndex: number };
 
-type TabletopLocation = { type: "tabletop"; x: number; y: number };
-
-type BoardLocation = { type: "board"; rowIndex: number; columnIndex: number };
-
-type PieceLocation = TabletopLocation | BoardLocation;
-
 type PieceDefinition = { color: string; home: Point; matrix: Matrix };
 
 type PieceState = {
@@ -55,8 +56,6 @@ type PieceState = {
   location: PieceLocation;
   zIndex: number;
 };
-
-type DragState = { pieceId: PieceId; offsetX: number; offsetY: number };
 
 type BoardCell = { label: string | null; type: "month" | "day" | "absent" };
 
@@ -420,44 +419,6 @@ function getPieceTopLeft(piece: PieceState): Point {
   return { x: piece.location.x, y: piece.location.y };
 }
 
-function getSnappedBoardLocation(
-  left: number,
-  top: number,
-  matrix: Matrix,
-): BoardLocation | null {
-  const dimensions = getPieceDimensions(matrix);
-
-  const pieceRectangle = {
-    left,
-    top,
-    right: left + dimensions.width,
-    bottom: top + dimensions.height,
-  };
-
-  const snapRectangle = {
-    left: boardLeft - cellStep * 1.5,
-    top: boardTop - cellStep * 1.5,
-    right: boardLeft + boardWidth + cellStep * 1.5,
-    bottom: boardTop + boardHeight + cellStep * 1.5,
-  };
-
-  const intersectsBoardSnapArea =
-    pieceRectangle.right >= snapRectangle.left &&
-    pieceRectangle.left <= snapRectangle.right &&
-    pieceRectangle.bottom >= snapRectangle.top &&
-    pieceRectangle.top <= snapRectangle.bottom;
-
-  if (!intersectsBoardSnapArea) {
-    return null;
-  }
-
-  return {
-    type: "board",
-    rowIndex: Math.round((top - boardTop) / cellStep),
-    columnIndex: Math.round((left - boardLeft) / cellStep),
-  };
-}
-
 function getPieceOccupiedBoardCells(piece: PieceState): OccupiedBoardCell[] {
   const { location } = piece;
 
@@ -566,6 +527,7 @@ type PuzzlePieceProps = {
   isDragging: boolean;
   isInvalid: boolean;
   isSelected: boolean;
+  elementRef: (element: HTMLDivElement | null) => void;
   onPointerDown: PointerEventHandler<HTMLDivElement>;
 };
 
@@ -574,6 +536,7 @@ function PuzzlePiece({
   isDragging,
   isInvalid,
   isSelected,
+  elementRef,
   onPointerDown,
 }: Readonly<PuzzlePieceProps>) {
   const topLeft = getPieceTopLeft(piece);
@@ -605,6 +568,7 @@ function PuzzlePiece({
 
   return (
     <div
+      ref={elementRef}
       className="absolute cursor-grab touch-none select-none active:cursor-grabbing"
       style={{
         left: topLeft.x,
@@ -612,6 +576,7 @@ function PuzzlePiece({
         width: dimensions.width,
         height: dimensions.height,
         zIndex: piece.zIndex,
+        willChange: isDragging ? "transform" : undefined,
         opacity: isDragging ? 0.9 : 1,
         filter: isSelected
           ? "drop-shadow(0 12px 16px rgba(15, 23, 42, 0.32))"
@@ -711,7 +676,6 @@ function Artifact() {
     createInitialPieces(),
   );
   const [selectedPieceId, setSelectedPieceId] = useState<PieceId | null>(null);
-  const [dragState, setDragState] = useState<DragState | null>(null);
   const [isSolvedModalOpen, setIsSolvedModalOpen] = useState(false);
   const [isHintModalOpen, setIsHintModalOpen] = useState(false);
   const wasSolvedRef = useRef(false);
@@ -763,126 +727,43 @@ function Artifact() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!dragState) {
-      return;
-    }
-
-    function getStagePoint(event: globalThis.PointerEvent): Point | null {
-      if (!stageElementRef.current) {
-        return null;
-      }
-
-      const stageRectangle = stageElementRef.current.getBoundingClientRect();
+  // Game state is committed only on drop; the hook owns all pointer and
+  // frame-level presentation work independently of puzzle validity.
+  const commitPieceDrop = useCallback((pieceId: PieceId, position: Point) => {
+    setPieces((currentPieces) => {
+      const currentPiece = currentPieces[pieceId];
+      const location = resolvePieceDropLocation(
+        position,
+        getPieceDimensions(currentPiece.matrix),
+        {
+          left: boardLeft,
+          top: boardTop,
+          width: boardWidth,
+          height: boardHeight,
+          cellStep,
+        },
+      );
 
       return {
-        x:
-          ((event.clientX - stageRectangle.left) / stageRectangle.width) *
-          stageWidth,
-        y:
-          ((event.clientY - stageRectangle.top) / stageRectangle.height) *
-          stageHeight,
+        ...currentPieces,
+        [pieceId]: {
+          ...currentPiece,
+          location,
+        },
       };
-    }
-
-    function handlePointerMove(event: globalThis.PointerEvent) {
-      event.preventDefault();
-
-      const pointerPoint = getStagePoint(event);
-
-      if (!pointerPoint) {
-        return;
-      }
-
-      if (!dragState) {
-        return;
-      }
-
-      const nextLeft = pointerPoint.x - dragState.offsetX;
-      const nextTop = pointerPoint.y - dragState.offsetY;
-
-      setPieces((currentPieces) => {
-        const currentPiece = currentPieces[dragState.pieceId];
-        const snappedBoardLocation = getSnappedBoardLocation(
-          nextLeft,
-          nextTop,
-          currentPiece.matrix,
-        );
-
-        return {
-          ...currentPieces,
-          [dragState.pieceId]: {
-            ...currentPiece,
-            location:
-              snappedBoardLocation ??
-              ({
-                type: "tabletop",
-                x: nextLeft,
-                y: nextTop,
-              } satisfies TabletopLocation),
-          },
-        };
-      });
-    }
-
-    function handlePointerUp(event: globalThis.PointerEvent) {
-      event.preventDefault();
-
-      const pointerPoint = getStagePoint(event);
-
-      if (!pointerPoint) {
-        setDragState(null);
-
-        return;
-      }
-
-      if (!dragState) {
-        return;
-      }
-
-      const nextLeft = pointerPoint.x - dragState.offsetX;
-      const nextTop = pointerPoint.y - dragState.offsetY;
-
-      setPieces((currentPieces) => {
-        const currentPiece = currentPieces[dragState.pieceId];
-        const snappedBoardLocation = getSnappedBoardLocation(
-          nextLeft,
-          nextTop,
-          currentPiece.matrix,
-        );
-
-        return {
-          ...currentPieces,
-          [dragState.pieceId]: {
-            ...currentPiece,
-            location:
-              snappedBoardLocation ??
-              ({
-                type: "tabletop",
-                x: nextLeft,
-                y: nextTop,
-              } satisfies TabletopLocation),
-          },
-        };
-      });
-
-      setDragState(null);
-    }
-
-    document.addEventListener("pointermove", handlePointerMove, {
-      passive: false,
     });
-    document.addEventListener("pointerup", handlePointerUp, { passive: false });
-    document.addEventListener("pointercancel", handlePointerUp, {
-      passive: false,
-    });
+  }, []);
 
-    return () => {
-      document.removeEventListener("pointermove", handlePointerMove);
-      document.removeEventListener("pointerup", handlePointerUp);
-      document.removeEventListener("pointercancel", handlePointerUp);
-    };
-  }, [dragState]);
+  const {
+    draggingPieceId,
+    beginDrag,
+    cancelDrag,
+    registerPieceElement,
+  } = usePieceDrag<PieceId>({
+    stageElementRef,
+    stageSize,
+    onDrop: commitPieceDrop,
+  });
 
   function bringPieceToFront(pieceId: PieceId) {
     setPieces((currentPieces) => {
@@ -904,35 +785,17 @@ function Artifact() {
     event.preventDefault();
     event.stopPropagation();
 
-    if (!stageElementRef.current) {
+    const piece = pieces[pieceId];
+    if (!beginDrag(event, pieceId, getPieceTopLeft(piece))) {
       return;
     }
 
-    const stageRectangle = stageElementRef.current.getBoundingClientRect();
-
-    const pointerPoint = {
-      x:
-        ((event.clientX - stageRectangle.left) / stageRectangle.width) *
-        stageWidth,
-      y:
-        ((event.clientY - stageRectangle.top) / stageRectangle.height) *
-        stageHeight,
-    };
-
-    const piece = pieces[pieceId];
-    const topLeft = getPieceTopLeft(piece);
-
     setSelectedPieceId(pieceId);
     bringPieceToFront(pieceId);
-
-    setDragState({
-      pieceId,
-      offsetX: pointerPoint.x - topLeft.x,
-      offsetY: pointerPoint.y - topLeft.y,
-    });
   }
 
   function placeSelectedPieceOnCell(rowIndex: number, columnIndex: number) {
+    cancelDrag();
     if (!selectedPieceId) {
       return;
     }
@@ -954,6 +817,7 @@ function Artifact() {
   }
 
   function rotateSelectedPiece() {
+    cancelDrag();
     if (!selectedPieceId) {
       return;
     }
@@ -968,6 +832,7 @@ function Artifact() {
   }
 
   function flipSelectedPiece() {
+    cancelDrag();
     if (!selectedPieceId) {
       return;
     }
@@ -982,6 +847,7 @@ function Artifact() {
   }
 
   function returnSelectedPieceToTabletop() {
+    cancelDrag();
     if (!selectedPieceId) {
       return;
     }
@@ -999,7 +865,7 @@ function Artifact() {
 
   function resetPieces() {
     setSelectedPieceId(null);
-    setDragState(null);
+    cancelDrag();
     setIsSolvedModalOpen(false);
     setIsHintModalOpen(false);
     setPieces(createInitialPieces());
@@ -1182,12 +1048,15 @@ function Artifact() {
               .map((piece) => (
                 <PuzzlePiece
                   key={piece.pieceId}
-                  isDragging={dragState?.pieceId === piece.pieceId}
+                  isDragging={draggingPieceId === piece.pieceId}
                   isInvalid={derivedPuzzleState.invalidPieceIds.has(
                     piece.pieceId,
                   )}
                   isSelected={piece.pieceId === selectedPieceId}
                   piece={piece}
+                  elementRef={(element) =>
+                    registerPieceElement(piece.pieceId, element)
+                  }
                   onPointerDown={(event) =>
                     handlePiecePointerDown(event, piece.pieceId)
                   }
