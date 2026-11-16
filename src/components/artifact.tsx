@@ -1042,6 +1042,7 @@ function Artifact() {
       </Dialog>
 
       <TodaysHintDialog
+        key={`${puzzleDate.monthIndex}-${puzzleDate.day}`}
         open={isHintModalOpen}
         puzzleDate={puzzleDate}
         onOpenChange={setIsHintModalOpen}
